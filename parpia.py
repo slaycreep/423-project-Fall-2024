@@ -1,212 +1,326 @@
-# Parpia's code
-
 from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
-import random 
-canyons=[]
-c=0
-b=0
-sky=(0.53,0.81,0.92,1)
-def draw_points(x, y,r,g,b):
-    glPointSize(2) 
+import random
+
+# end of imports
+
+
+canyon_top = [{"x": i, "y": random.randint(60, 100)} for i in range(0, 600, 20)]
+
+c = 0
+b = 0
+cl = 0
+sky = (0.53, 0.81, 0.92, 1)
+clouds = []
+gameover = False
+
+def draw_points(x, y, r, g, b):
+    glPointSize(2)
     glBegin(GL_POINTS)
-    glColor3f(r,g,b)
-    glVertex2f(x,y) 
+    glColor3f(r, g, b)
+    glVertex2f(x, y)
     glEnd()
 
-def find_zone(x1,y1,x2,y2):
-    dx=x2-x1
-    dy=y2-y1
-    if abs(dx)>abs(dy):
-        if dx>=0 and dy>=0:
+
+def find_zone(x1, y1, x2, y2):
+    dx = x2 - x1
+    dy = y2 - y1
+    if abs(dx) > abs(dy):
+        if dx >= 0 and dy >= 0:
             return 0
-        elif dx<=0 and dy>=0:
-            return 3 
-        elif dx<=0 and dy<=0:
+        elif dx <= 0 and dy >= 0:
+            return 3
+        elif dx <= 0 and dy <= 0:
             return 4
-        elif dx>=0 and dy<=0:
+        elif dx >= 0 and dy <= 0:
             return 7
     else:
-        if dx>=0 and dy>=0:
+        if dx >= 0 and dy >= 0:
             return 1
-        elif dx<=0 and dy>=0:
+        elif dx <= 0 and dy >= 0:
             return 2
-        elif dx<=0 and dy<=0:
+        elif dx <= 0 and dy <= 0:
             return 5
-        elif dx>=0 and dy<=0:
+        elif dx >= 0 and dy <= 0:
             return 6
-        
-def convert_M_to_0(x,y,zone):
-    if zone==0:
-        return (x,y)
-    elif zone==1:
-        return (y,x)
-    elif zone==2:
-        return (y,-x)
-    elif zone==3:
-        return (-x,y)
-    elif zone==4:
-        return (-x,-y)
-    elif zone==5:
-        return (-y,-x)
-    elif zone==6:
-        return (-y,x)
-    elif zone==7:
-        return (x,-y)
 
-def convert_0_to_M(x,y,zone):
-    if zone==0:
-        return (x,y)
-    elif zone==1:
-        return (y,x)
-    elif zone==2:
-        return (-y,x)
-    elif zone==3:
-        return(-x,y)
-    elif zone==4:
-        return (-x,-y)
-    elif zone==5:
-        return (-y,-x)
-    elif zone==6:
-        return (y,-x)
-    elif zone==7:
-        return (x,-y)
 
-def MidpointLine(nx1,ny1,nx2,ny2,zone,r,g,b):
-    ndx=nx2-nx1
-    ndy=ny2-ny1
-    d=2*ndy-ndx
-    incE=2*ndy
-    incNE=2*(ndy-ndx)
-    y=ny1
-    x=nx1
-    cx,cy=convert_0_to_M(x,y,zone)
-    draw_points(cx,cy,r,g,b)
-    while x<nx2:
-        if d<=0:
-            d+=incE
-            x+=1
+def convert_M_to_0(x, y, zone):
+    if zone == 0:
+        return (x, y)
+    elif zone == 1:
+        return (y, x)
+    elif zone == 2:
+        return (y, -x)
+    elif zone == 3:
+        return (-x, y)
+    elif zone == 4:
+        return (-x, -y)
+    elif zone == 5:
+        return (-y, -x)
+    elif zone == 6:
+        return (-y, x)
+    elif zone == 7:
+        return (x, -y)
+
+
+def convert_0_to_M(x, y, zone):
+    if zone == 0:
+        return (x, y)
+    elif zone == 1:
+        return (y, x)
+    elif zone == 2:
+        return (-y, x)
+    elif zone == 3:
+        return (-x, y)
+    elif zone == 4:
+        return (-x, -y)
+    elif zone == 5:
+        return (-y, -x)
+    elif zone == 6:
+        return (y, -x)
+    elif zone == 7:
+        return (x, -y)
+
+
+def MidpointLine(nx1, ny1, nx2, ny2, zone, r, g, b):
+    ndx = nx2 - nx1
+    ndy = ny2 - ny1
+    d = 2 * ndy - ndx
+    incE = 2 * ndy
+    incNE = 2 * (ndy - ndx)
+    y = ny1
+    x = nx1
+    cx, cy = convert_0_to_M(x, y, zone)
+    draw_points(cx, cy, r, g, b)
+    while x < nx2:
+        if d <= 0:
+            d += incE
+            x += 1
         else:
-            d+=incNE
-            x+=1
-            y+=1
-        cx,cy=convert_0_to_M(x,y,zone)
-        draw_points(cx,cy,r,g,b)
+            d += incNE
+            x += 1
+            y += 1
+        cx, cy = convert_0_to_M(x, y, zone)
+        draw_points(cx, cy, r, g, b)
 
-def eightway(x1, y1, x2, y2,r,g,b):
-    zone=find_zone(x1,y1,x2,y2)
-    nx1,ny1=convert_M_to_0(x1, y1,zone)
-    nx2,ny2=convert_M_to_0(x2, y2,zone)
-    MidpointLine(nx1,ny1,nx2,ny2,zone,r,g,b)
 
-def d_update(d,x,y,direction):
-    if direction=="SE":
-        return d+(2*x)-(2*y)+5
+def eightway(x1, y1, x2, y2, r, g, b):
+    zone = find_zone(x1, y1, x2, y2)
+    nx1, ny1 = convert_M_to_0(x1, y1, zone)
+    nx2, ny2 = convert_M_to_0(x2, y2, zone)
+    MidpointLine(nx1, ny1, nx2, ny2, zone, r, g, b)
+
+
+def d_update(d, x, y, direction):
+    if direction == "SE":
+        return d + (2 * x) - (2 * y) + 5
     else:
-        return d+(2*x)+3
-    
-def circlepoints(x,y,cx,cy,r,g,b):
-    draw_points(x+cx,y+cy,r,g,b)
-    draw_points(y+cx,x+cy,r,g,b)
-    draw_points(y+cx,-x+cy,r,g,b)
-    draw_points(x+cx,-y+cy,r,g,b)
-    draw_points(-x+cx,-y+cy,r,g,b)
-    draw_points(-y+cx,-x+cy,r,g,b)
-    draw_points(-y+cx,x+cy,r,g,b)
-    draw_points(-x+cx,y+cy,r,g,b)
+        return d + (2 * x) + 3
 
-def circle(radius,r,g,b,cx=0,cy=0):
-    d=1-radius
-    x=0
-    y=radius
-    circlepoints(x,y,cx,cy,r,g,b)
-    while x<=y:
-        if d>=0:
-            d+=2*(x-y)+5
-            x+=1
-            y-=1
+
+def circlepoints(x, y, cx, cy, r, g, b):
+    draw_points(x + cx, y + cy, r, g, b)
+    draw_points(y + cx, x + cy, r, g, b)
+    draw_points(y + cx, -x + cy, r, g, b)
+    draw_points(x + cx, -y + cy, r, g, b)
+    draw_points(-x + cx, -y + cy, r, g, b)
+    draw_points(-y + cx, -x + cy, r, g, b)
+    draw_points(-y + cx, x + cy, r, g, b)
+    draw_points(-x + cx, y + cy, r, g, b)
+
+
+def circle(radius, r, g, b, cx=0, cy=0):
+    d = 1 - radius
+    x = 0
+    y = radius
+    circlepoints(x, y, cx, cy, r, g, b)
+    while x <= y:
+        if d >= 0:
+            d += 2 * (x - y) + 5
+            x += 1
+            y -= 1
         else:
-            d+=(2*x)+3
-            x+=1
-        circlepoints(x,y,cx,cy,r,g,b)
+            d += (2 * x) + 3
+            x += 1
+        circlepoints(x, y, cx, cy, r, g, b)
+
 
 def fill_circle_with_points(cx, cy, radius, r, g, b):
     glColor3f(r, g, b)  # Set the fill color
     glBegin(GL_POINTS)
     for x in range(cx - radius, cx + radius + 1):
         for y in range(cy - radius, cy + radius + 1):
-            if (x - cx) ** 2 + (y - cy) ** 2 <= radius ** 2:  # Check if the point is inside the circle
+            if (x - cx) ** 2 + (
+                y - cy
+            ) ** 2 <= radius**2:  # Check if the point is inside the circle
                 glVertex2f(x, y)
     glEnd()
 
-def canyons(c):
-    eightway(540+c%600,100,600+c,80%600,2,2,0)
-    eightway(420+c%600,50,540+c%600,100,2,2,0)
-    eightway(360+c%600,80,420+c%600,50,2,2,0)
-    eightway(250+c%600,100,360+c%600,80,2,2,0)
-    eightway(200+c%600,100,250+c%600,100,2,2,0)
-    eightway(80+c%600,50,200+c%600,100,2,2,0)
-    eightway(0+c%600,80,80+c%600,50,2,2,0)
 
-def move():
-    global c
-    c+=5
+# canyon code
+def update_canyon_top():
+    global canyon_top
+    for point in canyon_top:
+        point["x"] -= 2  # Move left
+    if canyon_top[0]["x"] < 0:
+        canyon_top.pop(0)  # Remove leftmost point
+        new_x = canyon_top[-1]["x"] + 20  # Add new point to the right
+        new_y = canyon_top[-1]["y"] + random.randint(-10, 10)  # Random y offset
+        new_y = max(50, min(150, new_y))  # Clamp y value
+        canyon_top.append({"x": new_x, "y": new_y})
+
+
+def draw_canyon_top():
+    for i in range(len(canyon_top) - 1):
+        x0, y0 = canyon_top[i]["x"], canyon_top[i]["y"]
+        x1, y1 = canyon_top[i + 1]["x"], canyon_top[i + 1]["y"]
+        eightway(int(x0), int(y0), int(x1), int(y1), 0.58, 0.29, 0)
 
 
 def balloons(b):
-    circle(25,0,0,0.5,100,275+b) #circle of balloon
-    fill_circle_with_points(100,275+b, 25, 0, 0, 0.5)  # Filled red circle
-    eightway(80,235+b,120,235+b,0.58,0.29,0) #box
-    eightway(80,235+b,85,215+b,0.58,0.29,0)
-    eightway(120,235+b,115,215+b,0.58,0.29,0)
-    eightway(85,215+b,115,215+b,0.58,0.29,0)
+    circle(25, 0, 0, 0.5, 100, 275 + b)  # circle of balloon
+    fill_circle_with_points(100, 275 + b, 25, 0, 0, 0.5)  # Filled red circle
+    eightway(80, 235 + b, 120, 235 + b, 0.58, 0.29, 0)  # box
+    eightway(80, 235 + b, 85, 215 + b, 0.58, 0.29, 0)
+    eightway(120, 235 + b, 115, 215 + b, 0.58, 0.29, 0)
+    eightway(85, 215 + b, 115, 215 + b, 0.58, 0.29, 0)
 
-    eightway(80,235+b,80,260+b,0.58,0.29,0) #ropes
-    eightway(120,235+b,120,260+b,0.58,0.29,0)
-    eightway(100,250+b,100,235+b,0.58,0.29,0)
-    
+    eightway(80, 235 + b, 80, 260 + b, 0.58, 0.29, 0)  # ropes
+    eightway(120, 235 + b, 120, 260 + b, 0.58, 0.29, 0)
+    eightway(100, 250 + b, 100, 235 + b, 0.58, 0.29, 0)
+
+
+class balloon_hitbox:
+    def __init__(self, b):
+        self.xmin = 75
+        self.ymin = 215 + b
+        self.xmax = 125
+        self.ymax = 300 + b
+        self.height = self.ymax - self.ymin
+        self.width = self.xmax - self.xmin
+
+
+
+def cloud():
+    y=random.randint(90,400)
+    if len(clouds)==0 and random.randint(1,100)==10:
+        clouds.append([25,0.69,0.74,0.71,530,y])
+        clouds.append([25,0.69,0.74,0.71,550,y])
+        clouds.append([25,0.69,0.74,0.71,580,y])
+        clouds.append([25,0.69,0.74,0.71,550,y+20])
+
+class cloud_hitbox:
+    def __init__(self, arr, cl):
+        self.xmin = arr[0][4]-arr[0][0]+cl
+        self.ymin = arr[0][5]-arr[0][0]
+        self.xmax = arr[2][4]+arr[2][0]+cl
+        self.ymax = arr[3][5]+arr[3][0]
+        self.height = self.ymax - self.ymin
+        self.width = self.xmax - self.xmin
+
+def draw_clouds():
+    global clouds,cl
+    if len(clouds)!=0:
+        for i in range(0,len(clouds)-1,4):
+            if clouds[0][4]-clouds[0][0]+cl<=0:
+                clouds=[]
+            else:
+                circle(clouds[i][0],clouds[i][1],clouds[i][2],clouds[i][3],clouds[i][4]+cl,clouds[i][5])
+                circle(clouds[i+1][0],clouds[i+1][1],clouds[i+1][2],clouds[i+1][3],clouds[i+1][4]+cl,clouds[i+1][5])
+                circle(clouds[i+2][0],clouds[i+2][1],clouds[i+2][2],clouds[i+2][3],clouds[i+2][4]+cl,clouds[i+2][5])
+                circle(clouds[i+3][0],clouds[i+3][1],clouds[i+3][2],clouds[i+3][3],clouds[i+3][4]+cl,clouds[i+3][5])
+
+                fill_circle_with_points(clouds[i][4]+cl,clouds[i][5], clouds[i][0], clouds[i][1],clouds[i][2],clouds[i][3])
+                fill_circle_with_points(clouds[i+1][4]+cl,clouds[i+1][5], clouds[i+1][0], clouds[i+1][1],clouds[i+1][2],clouds[i+1][3])
+                fill_circle_with_points(clouds[i+2][4]+cl,clouds[i+2][5], clouds[i+2][0], clouds[i+2][1],clouds[i+2][2],clouds[i+2][3])
+                fill_circle_with_points(clouds[i+3][4]+cl,clouds[i+3][5], clouds[i+3][0], clouds[i+3][1],clouds[i+3][2],clouds[i+3][3])
+
+def move_clouds():
+    global cl,clouds
+    if len(clouds)==0:
+        cl=0
+    else:
+        cl-=5
 def specialKeyListener(key, x, y):
     global b
-    if key==GLUT_KEY_UP:
+    if key == GLUT_KEY_UP:
         b += 10
-    if key== GLUT_KEY_DOWN:		#// up arrow key
-        b-=10
+    if key == GLUT_KEY_DOWN:  # // up arrow key
+        b -= 10
     glutPostRedisplay()
 
 
 def animation():
-    move()
+    global gameover
+    if not gameover:
+        update_canyon_top()
+        move_clouds()
     glutPostRedisplay()
+    # glutTimerFunc(16, animation, 0)
+
 
 def iterate():
     glViewport(0, 0, 600, 500)
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
     glOrtho(0.0, 600, 0.0, 500, 0.0, 1.0)
-    glMatrixMode (GL_MODELVIEW)
+    glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
+
+
+def check_collision():
+    balloon = balloon_hitbox(b)
+   
+    for i in range(len(canyon_top) - 1):
+        current_point = canyon_top[i]
+        next_point = canyon_top[i + 1]
+        
+        # Check if balloon is within the x-range of these canyon points
+        if (balloon.xmin <= next_point["x"] and balloon.xmax >= current_point["x"]):
+            if balloon.ymin <= current_point["y"]:
+                print("Collided with canyon!")
+                return True
+    
+    return False
+
+def cloud_collision():
+    global clouds,cl
+    bb = balloon_hitbox(b)
+    cc = cloud_hitbox(clouds,cl)
+    return (bb.xmin)<(cc.xmin+cc.width) and (bb.xmin+bb.width)>(cc.xmin) and (bb.ymin)<(cc.ymin+cc.height) and (bb.ymin+bb.height)>(cc.ymin)
 
 def showScreen():
-    global c,b
+    global c, b, gameover
     glClearColor(*sky)
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+    glClear(GL_COLOR_BUFFER_BIT)
     glLoadIdentity()
     iterate()
-    glColor3f(1.0, 1.0, 0.0) #konokichur color set (RGB)
-    #call the draw methods here
-    canyons(c)
-    balloons(b)
-    glutSwapBuffers()
+    glColor3f(1.0, 1.0, 0.0)  # konokichur color set (RGB)
+    # call the draw methods here
+    if not gameover:
+        balloons(b)
+        draw_canyon_top()
+        cloud()
+        draw_clouds()
 
+        if check_collision() == True:
+            gameover = True
+        if len(clouds)!=0:
+            if cloud_collision() == True:
+                print("Collided with cloud!")
+                gameover = True
+
+    glutSwapBuffers()
 
 
 glutInit()
 glutInitDisplayMode(GLUT_RGBA)
-glutInitWindowSize(600, 500) #window size
+glutInitWindowSize(600, 500)  # window size
 glutInitWindowPosition(0, 0)
-wind = glutCreateWindow(b"OpenGL Coding Practice") #window name
+wind = glutCreateWindow(b"Up And Away!")  # window name
 glutDisplayFunc(showScreen)
-glutIdleFunc(animation) 
+glutIdleFunc(animation)
 glutSpecialFunc(specialKeyListener)
 glutMainLoop()
