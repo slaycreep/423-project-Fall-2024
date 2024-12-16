@@ -191,7 +191,7 @@ def balloons(b):
     
 class balloon_hitbox():
     def __init__(self, b):
-        self.xmin = 85
+        self.xmin = 75
         self.ymin = 215 +  b
         self.xmax = 125
         self.ymax = 300 + b
