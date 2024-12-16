@@ -188,7 +188,15 @@ def balloons(b):
     eightway(80, 235 + b, 80, 260 + b, 0.58, 0.29, 0)  # ropes
     eightway(120, 235 + b, 120, 260 + b, 0.58, 0.29, 0)
     eightway(100, 250 + b, 100, 235 + b, 0.58, 0.29, 0)
-
+    
+class balloon_hitbox():
+    def __init__(self, b):
+        self.xmin = 85
+        self.ymin = 215 +  b
+        self.xmax = 125
+        self.ymax = 300 + b
+        self.height = self.ymax - self.ymin
+        self.width = self.xmax - self.xmin
 
 def specialKeyListener(key, x, y):
     global b
