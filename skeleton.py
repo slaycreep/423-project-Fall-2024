@@ -188,15 +188,26 @@ def balloons(b):
     eightway(80, 235 + b, 80, 260 + b, 0.58, 0.29, 0)  # ropes
     eightway(120, 235 + b, 120, 260 + b, 0.58, 0.29, 0)
     eightway(100, 250 + b, 100, 235 + b, 0.58, 0.29, 0)
-    
-class balloon_hitbox():
+
+
+class balloon_hitbox:
     def __init__(self, b):
         self.xmin = 75
-        self.ymin = 215 +  b
+        self.ymin = 215 + b
         self.xmax = 125
         self.ymax = 300 + b
         self.height = self.ymax - self.ymin
         self.width = self.xmax - self.xmin
+
+# No need for canyon hitbox
+# class canyon_hitbox:
+#     def __init__(self, b):
+#         self.xmin = 0
+#         self.xmax = 600
+
+#         self.height = 100
+#         self.width = self.xmax - self.xmin
+
 
 def specialKeyListener(key, x, y):
     global b
@@ -222,6 +233,22 @@ def iterate():
     glLoadIdentity()
 
 
+def check_collision():
+    balloon = balloon_hitbox(b)
+   
+    for i in range(len(canyon_top) - 1):
+        current_point = canyon_top[i]
+        next_point = canyon_top[i + 1]
+        
+        # Check if balloon is within the x-range of these canyon points
+        if (balloon.xmin <= next_point["x"] and balloon.xmax >= current_point["x"]):
+            if balloon.ymin <= current_point["y"]:
+                print("Collided with canyon!")
+                return True
+    
+    return False
+
+
 def showScreen():
     global c, b
     glClearColor(*sky)
@@ -232,6 +259,7 @@ def showScreen():
     # call the draw methods here
     balloons(b)
     draw_canyon_top()
+    check_collision()
     glutSwapBuffers()
 
 
