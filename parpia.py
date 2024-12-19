@@ -205,7 +205,7 @@ class balloon_hitbox:
 
 def cloud():
     y=random.randint(90,400)
-    if len(clouds)==0 and random.randint(1,100)==10:
+    if len(clouds)==0 and random.randint(1,200)==10:
         clouds.append([25,0.69,0.74,0.71,530,y])
         clouds.append([25,0.69,0.74,0.71,550,y])
         clouds.append([25,0.69,0.74,0.71,580,y])
@@ -243,6 +243,7 @@ def move_clouds():
         cl=0
     else:
         cl-=5
+        
 def specialKeyListener(key, x, y):
     global b
     if key == GLUT_KEY_UP:
@@ -253,10 +254,11 @@ def specialKeyListener(key, x, y):
 
 
 def animation():
-    global gameover
+    global gameover,b
     if not gameover:
         update_canyon_top()
         move_clouds()
+        b-=1 #gravity
     glutPostRedisplay()
     # glutTimerFunc(16, animation, 0)
 
@@ -304,7 +306,6 @@ def showScreen():
         draw_canyon_top()
         cloud()
         draw_clouds()
-
         if check_collision() == True:
             gameover = True
         if len(clouds)!=0:
