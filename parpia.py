@@ -357,7 +357,7 @@ def showScreen():
             update_slow_mo()
             
     if gameover and print_score:
-        print(time.time()-start_time)
+        print("Your score is "+str(round(time.time()-start_time)))
         print_score=False
     glutSwapBuffers()
 
