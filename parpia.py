@@ -2,18 +2,21 @@ from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
 import random
-
+import time
 # end of imports
-
-
 canyon_top = [{"x": i, "y": random.randint(60, 100)} for i in range(0, 600, 20)]
-
 c = 0
 b = 0
 cl = 0
 sky = (0.53, 0.81, 0.92, 1)
 clouds = []
 gameover = False
+slowmo = False
+slow = []
+s = 0
+slowmo_start_time = None
+start_time = time.time()
+print_score=True
 
 def draw_points(x, y, r, g, b):
     glPointSize(2)
@@ -152,9 +155,7 @@ def fill_circle_with_points(cx, cy, radius, r, g, b):
     glBegin(GL_POINTS)
     for x in range(cx - radius, cx + radius + 1):
         for y in range(cy - radius, cy + radius + 1):
-            if (x - cx) ** 2 + (
-                y - cy
-            ) ** 2 <= radius**2:  # Check if the point is inside the circle
+            if (x - cx) ** 2 + (y - cy) ** 2 <= radius**2:  # Check if the point is inside the circle
                 glVertex2f(x, y)
     glEnd()
 
@@ -201,10 +202,8 @@ class balloon_hitbox:
         self.height = self.ymax - self.ymin
         self.width = self.xmax - self.xmin
 
-
-
 def cloud():
-    y=random.randint(90,400)
+    y=random.randint(90,400) #cloud's vertical position will be generated randomly
     if len(clouds)==0 and random.randint(1,200)==10:
         clouds.append([25,0.69,0.74,0.71,530,y])
         clouds.append([25,0.69,0.74,0.71,550,y])
@@ -224,7 +223,7 @@ def draw_clouds():
     global clouds,cl
     if len(clouds)!=0:
         for i in range(0,len(clouds)-1,4):
-            if clouds[0][4]-clouds[0][0]+cl<=0:
+            if clouds[0][4]-clouds[0][0]+cl<=0: #checking whether cloud has travelled to leftmost corner of screeen
                 clouds=[]
             else:
                 circle(clouds[i][0],clouds[i][1],clouds[i][2],clouds[i][3],clouds[i][4]+cl,clouds[i][5])
@@ -238,43 +237,15 @@ def draw_clouds():
                 fill_circle_with_points(clouds[i+3][4]+cl,clouds[i+3][5], clouds[i+3][0], clouds[i+3][1],clouds[i+3][2],clouds[i+3][3])
 
 def move_clouds():
-    global cl,clouds
+    global cl,clouds,s
     if len(clouds)==0:
         cl=0
     else:
-        cl-=5
-        
-def specialKeyListener(key, x, y):
-    global b
-    if key == GLUT_KEY_UP:
-        b += 10
-    if key == GLUT_KEY_DOWN:  # // up arrow key
-        b -= 10
-    glutPostRedisplay()
-
-
-def animation():
-    global gameover,b
-    if not gameover:
-        update_canyon_top()
-        move_clouds()
-        b-=1 #gravity
-    glutPostRedisplay()
-    # glutTimerFunc(16, animation, 0)
-
-
-def iterate():
-    glViewport(0, 0, 600, 500)
-    glMatrixMode(GL_PROJECTION)
-    glLoadIdentity()
-    glOrtho(0.0, 600, 0.0, 500, 0.0, 1.0)
-    glMatrixMode(GL_MODELVIEW)
-    glLoadIdentity()
-
+        cl=cl-(10-s)   # s is the variable which is actiavted when slowmode is on, so clouds will move slowly
 
 def check_collision():
+
     balloon = balloon_hitbox(b)
-   
     for i in range(len(canyon_top) - 1):
         current_point = canyon_top[i]
         next_point = canyon_top[i + 1]
@@ -293,26 +264,101 @@ def cloud_collision():
     cc = cloud_hitbox(clouds,cl)
     return (bb.xmin)<(cc.xmin+cc.width) and (bb.xmin+bb.width)>(cc.xmin) and (bb.ymin)<(cc.ymin+cc.height) and (bb.ymin+bb.height)>(cc.ymin)
 
+def slow_motion():
+    global slow
+    if not gameover:
+        a = random.randint(90,400) 
+        slow.append([14,600,random.randint(90,400),1,1,0])
+
+def move_slow(arr):  #falling motion of slow
+    if not gameover:
+        for i in range(len(arr)): 
+            if arr[i][1] > 0:
+                arr[i][1] -= 5
+
+def collide_slowmo(arr):
+    if len(arr)!=0:
+        balloon = balloon_hitbox(b)
+        cxmin=arr[0][1]-arr[0][0]
+        cymin=arr[0][2]-arr[0][0]
+        cwidth,cheight=(2 * arr[0][0], 2 * arr[0][0])
+        return (balloon.xmin)<(cxmin+cwidth) and (balloon.xmin+balloon.width)>(cxmin) and (balloon.ymin)<(cymin+cheight) and (balloon.ymin+balloon.height)>(cymin)
+
+def activate_slow_mo():
+    global slowmo, slowmo_start_time,s
+    slowmo = True
+    slowmo_start_time = time.time()
+    s=5
+    print("Slow motion activated!")
+
+def update_slow_mo():
+    global slowmo, slowmo_start_time,s
+    if slowmo and (time.time() - slowmo_start_time >= 5):
+        slowmo = False
+        s=0
+        print("Slow motion deactivated!")
+
+
+def specialKeyListener(key, x, y):
+    global b
+    b1=balloon_hitbox(b)
+    if key == GLUT_KEY_UP and b1.ymax<500:
+        b += 10
+    if key == GLUT_KEY_DOWN:
+        b -= 10
+    glutPostRedisplay()
+
+
+def animation():
+    global gameover,b,slow,slowmo
+    if not gameover:
+        update_canyon_top()
+        move_clouds()
+        move_slow(slow)
+        b-=1 #gravity
+    glutPostRedisplay()
+
+def iterate():
+    glViewport(0, 0, 600, 500)
+    glMatrixMode(GL_PROJECTION)
+    glLoadIdentity()
+    glOrtho(0.0, 600, 0.0, 500, 0.0, 1.0)
+    glMatrixMode(GL_MODELVIEW)
+    glLoadIdentity()
+
 def showScreen():
-    global c, b, gameover
+    global c, b, gameover, slow, print_score
     glClearColor(*sky)
     glClear(GL_COLOR_BUFFER_BIT)
     glLoadIdentity()
     iterate()
-    glColor3f(1.0, 1.0, 0.0)  # konokichur color set (RGB)
-    # call the draw methods here
+    glColor3f(1.0, 1.0, 0.0)
     if not gameover:
         balloons(b)
         draw_canyon_top()
         cloud()
         draw_clouds()
+        if random.randint(1,1000)==77 and len(slow)==0 and not slowmo: #slow motion circles will generate
+            slow_motion()
         if check_collision() == True:
             gameover = True
         if len(clouds)!=0:
             if cloud_collision() == True:
                 print("Collided with cloud!")
                 gameover = True
-
+        if len(slow)!=0:
+            for i in slow:
+                if i!=None:
+                    circle(i[0],i[3],i[4],i[5],i[1],i[2])
+        if collide_slowmo(slow)==True:
+            slow=[]
+            activate_slow_mo()
+        if slowmo==True:
+            update_slow_mo()
+            
+    if gameover and print_score:
+        print(time.time()-start_time)
+        print_score=False
     glutSwapBuffers()
 
 
