@@ -293,7 +293,7 @@ def activate_slow_mo():
 
 def update_slow_mo():
     global slowmo, slowmo_start_time,s
-    if slowmo and (time.time() - slowmo_start_time >= 5):
+    if slowmo and (time.time() - slowmo_start_time >= 5): #slow mode will be activated for 5 sec
         slowmo = False
         s=0
         print("Slow motion deactivated!")
