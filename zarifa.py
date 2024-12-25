@@ -2,13 +2,13 @@ from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
 import random
-
+#######
+import time
 # end of imports
 
 
 canyon_top = [{"x": i, "y": random.randint(60, 100)} for i in range(0, 600, 20)]
 
-plane_x= 220
 c = 0
 b = 0
 cl = 0
@@ -19,6 +19,10 @@ fuel_level = 100
 
 # powerups array
 fuel_cans = []
+
+
+
+
 
 
 def draw_points(x, y, r, g, b):
@@ -119,11 +123,11 @@ def eightway(x1, y1, x2, y2, r, g, b):
     MidpointLine(nx1, ny1, nx2, ny2, zone, r, g, b)
 
 
-def d_update(d, x, y, direction):
-    if direction == "SE":
-        return d + (2 * x) - (2 * y) + 5
-    else:
-        return d + (2 * x) + 3
+    def d_update(d, x, y, direction):
+        if direction == "SE":
+         return d + (2 * x) - (2 * y) + 5
+        else:
+         return d + (2 * x) + 3
 
 
 def circlepoints(x, y, cx, cy, r, g, b):
@@ -384,6 +388,10 @@ def animation():
     if not gameover:
         update_canyon_top()
         move_clouds()
+        #####
+        check_planes()
+        update_planes()
+        #######
         # draw_fuel_cans()
         b -= 1  # gravity
     glutPostRedisplay()
@@ -479,34 +487,67 @@ def keyboard(key, x, y):
     elif key == b's':  # 's' key to move the balloon down
         balloon_pos[1] -= 0.05
 
+##### Storing plane
+def planes_initVal():
+   global planeLst, planeSpeed, lstCreatedPlane
+   planeLst = []
+   planeSpeed = 2
+   lstCreatedPlane = time.time()
+
 
 def drawAeroplane():
-    global plane_x  #, catcher_width, catcher_color
-    ##if catcher_color=='white':
-    #glColor3f(1, 1, 1)
-    #else:
-    #    glColor3f(1, 0, 0)
+    global planeLst#planeX,0  #, catcher_width, catcher_color
+    if len(planeLst) != 0:
 
-    #drawLine(plane_x, 20, plane_x, 50)
-    #drawLine(plane_x, 50, plane_x+10, 60)
-    #drawLine(plane_x+10, 60, plane_x+30, 60)
-    #drawLine(plane_x+30, 60, plane_x+catcher_width, 50)
-    #drawLine(plane_x+ catcher_width, 20,plane_x+ catcher_width, 50 )
-    #drawLine(plane_x+ catcher_width, 20, plane_x+ 30, 10)
-    #drawLine(plane_x+ 30, 10, plane_x+ 10, 10)
-    #drawLine(plane_x+ 10, 10, plane_x, 20)
-    eightway(plane_x, 20, plane_x+60, 20,1,1,1)
-    eightway(plane_x+20, 30, plane_x+ 50, 30,1,1,1)
-    eightway(plane_x, 20, plane_x+ 20, 30,1,1,1)
-    eightway(plane_x+60, 20, plane_x+ 60, 40,1,1,1)
-    eightway(plane_x+50, 30, plane_x+ 60, 40,1,1,1)
-    #
+        for plane in planeLst:
+            planeX= plane ["planeX"]
+            planeY= plane ["planeY"]
+            eightway(planeX, planeY+20, planeX+60, planeY+20,1,1,1)
+            eightway(planeX+20, planeY+30, planeX+ 50, planeY+30,1,1,1)
+            eightway(planeX, planeY+20, planeX+ 20, planeY+30,1,1,1)
+            eightway(planeX+60, planeY+20, planeX+ 60, planeY+40,1,1,1)
+            eightway(planeX+50, planeY+30, planeX+ 60, planeY+40,1,1,1)
 
 
 
+def create_plane():
+   global planeLst
+
+   planeInfo = {
+
+       "planeY": random.randint(200, 400),
+       "planeX": 600
+   }
+   planeLst.append(planeInfo)
+
+
+def update_planes():
+   global planeLst, planeSpeed
+   for plane in planeLst:
+       if plane['planeX'] < -230 :
+           planeLst.remove(plane)
+       else:
+           plane['planeX'] -= planeSpeed
 
 
 
+def check_planes():
+   global lstCreatedPlane
+   curTime = time.time()
+   if curTime - lstCreatedPlane >= 15:
+       create_plane()
+       lstCreatedPlane = time.time()
+
+
+def check_airplane_balloon_collision():
+    global planeLst, gameover
+    balloon = balloon_hitbox(b)
+
+
+    for plane in planeLst:
+        if plane['planeX'] < balloon.xmax and plane['planeY'] < balloon.ymax : #and plane['planeX'+60] > balloon.xmax :  # (-230 - bubbles['bubbleRad']):
+
+            return True
 
 
 def showScreen():
@@ -527,7 +568,12 @@ def showScreen():
         fuel_powerup()
         draw_fuel_cans()
 
-        drawAeroplane()########################
+        drawAeroplane()
+
+        ####check airplane balloon collision
+        if check_airplane_balloon_collision():
+            gameover = True
+            print("Collided with plane!")
 
         if check_collision() == True:
             gameover = True
@@ -545,64 +591,11 @@ def showScreen():
 
 
 
-# #include <GL/glut.h>
-# nterval in milliseconds
-# const int timerInterval = 16;
-#
-# void drawPlane() {
-#     glColor3f(1.0f, 0.0f, 0.0f); // Red color for the plane
-#     glBegin(GL_POINTS);
-#
-#     // Draw a simple plane using GL_POINTS
-#     for (int i = -10; i <= 10; ++i) {
-#         glVertex2f(plane_x + i, plane_y);       // Main body
-#         glVertex2f(plane_x, plane_y + i);       // Vertical stabilizer
-#     }
-#     for (int i = -5; i <= 5; ++i) {
-#         glVertex2f(plane_x - 5 + i, plane_y - 5); // Wings
-#     }
-#
-# float plane_x = 100.0f, plane_y = 300.0f; // Initial position of the plane
-#
-# // Timer i
-#     glEnd();
-# }
-#
-# void display() {
-#     glClear(GL_COLOR_BUFFER_BIT);
-#
-#     // Draw the moving plane
-#     drawPlane();
-#
-#     glutSwapBuffers();
-# }
-#
-# void timer(int value) {
-#     // Update plane's position to move left
-#     plane_x -= 2.0f;
-#
-#     // Reset position if plane moves off-screen
-#     if (plane_x < -10.0f) {
-#         plane_x = 400.0f; // Reset to the right edge
-#     }
-#
-#     // Redraw the scene
-#     glutPostRedisplay();
-#
-#     // Register the timer callback again
-#     glutTimerFunc(timerInterval, timer, 0);
-# }
-#
-# void initialize() {
-#     glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Black background
-#     glMatrixMode(GL_PROJECTION);
-#     gluOrtho2D(0.0, 400.0, 0.0, 400.0);   // 2D orthographic projection
-# }
-#
 
 
 
 glutInit()
+planes_initVal()
 glutInitDisplayMode(GLUT_RGBA)
 glutInitWindowSize(600, 500)  # window size
 glutInitWindowPosition(0, 0)
@@ -613,74 +606,3 @@ glutSpecialFunc(specialKeyListener)
 glutMainLoop()
 
 
-
-
-#
-# #include <GL/glut.h>
-#
-# float plane_x = 100.0f, plane_y = 300.0f; // Initial position of the plane
-#
-# // Timer interval in milliseconds
-# const int timerInterval = 16;
-#
-# void drawPlane() {
-#     glColor3f(1.0f, 0.0f, 0.0f); // Red color for the plane
-#     glBegin(GL_POINTS);
-#
-#     // Draw a simple plane using GL_POINTS
-#     for (int i = -10; i <= 10; ++i) {
-#         glVertex2f(plane_x + i, plane_y);       // Main body
-#         glVertex2f(plane_x, plane_y + i);       // Vertical stabilizer
-#     }
-#     for (int i = -5; i <= 5; ++i) {
-#         glVertex2f(plane_x - 5 + i, plane_y - 5); // Wings
-#     }
-#
-#     glEnd();
-# }
-#
-# void display() {
-#     glClear(GL_COLOR_BUFFER_BIT);
-#
-#     // Draw the moving plane
-#     drawPlane();
-#
-#     glutSwapBuffers();
-# }
-#
-# void timer(int value) {
-#     // Update plane's position to move left
-#     plane_x -= 2.0f;
-#
-#     // Reset position if plane moves off-screen
-#     if (plane_x < -10.0f) {
-#         plane_x = 400.0f; // Reset to the right edge
-#     }
-#
-#     // Redraw the scene
-#     glutPostRedisplay();
-#
-#     // Register the timer callback again
-#     glutTimerFunc(timerInterval, timer, 0);
-# }
-#
-# void initialize() {
-#     glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Black background
-#     glMatrixMode(GL_PROJECTION);
-#     gluOrtho2D(0.0, 400.0, 0.0, 400.0);   // 2D orthographic projection
-# }
-
-# int main(int argc, char** argv) {
-#     glutInit(&argc, argv);
-#     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
-#     glutInitWindowSize(400, 400);
-#     glutCreateWindow("Moving Plane");
-#
-#     initialize();
-#
-#     glutDisplayFunc(display);
-#     glutTimerFunc(timerInterval, timer, 0);
-#
-#     glutMainLoop();
-#     return 0;
-# }

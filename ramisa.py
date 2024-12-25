@@ -7,7 +7,6 @@ import time
 
 
 canyon_top = [{"x": i, "y": random.randint(60, 100)} for i in range(0, 600, 20)]
-
 c = 0
 b = 0
 cl = 0
@@ -15,7 +14,7 @@ sky = (0.53, 0.81, 0.92, 1)
 clouds = []
 gameover = False
 fuel_level = 100
-
+game_state="Playing"
 # powerups array
 fuel_cans = []
 immunity_cans = []
@@ -32,6 +31,62 @@ def draw_points(x, y, r, g, b):
     glVertex2f(x, y)
     glEnd()
 
+def draw_points_1(x, y):
+    glPointSize(1)
+    glBegin(GL_POINTS)
+    glVertex2f(x,y)
+    glEnd()
+
+def midpoint_circle(cx, cy, r):
+    d = 1 - r
+    x = 0
+    y = r
+    draw_points_1(x + cx, y + cy)
+    draw_points_1(-x + cx, y + cy)
+    draw_points_1(-y + cx, x + cy)
+    draw_points_1(-y + cx, -x + cy)
+    draw_points_1(-x + cx, -y + cy)
+    draw_points_1(x + cx, -y + cy)
+    draw_points_1(y + cx, -x + cy)
+    draw_points_1(y + cx, x + cy)
+
+    while x < y:
+        if d < 0:
+            d = d + 2 * x + 3 # e
+            x += 1
+        else:
+            d = d + 2 * x - 2 * y + 5  #se
+            x += 1
+            y -= 1
+        draw_points_1(x + cx, y + cy)
+        draw_points_1(-x + cx, y + cy)
+        draw_points_1(-y + cx, x + cy)
+        draw_points_1(-y + cx, -x + cy)
+        draw_points_1(-x + cx, -y + cy)
+        draw_points_1(x + cx, -y + cy)
+        draw_points_1(y + cx, -x + cy)
+        draw_points_1(y + cx, x + cy)
+
+def midpoint(x1,y1,x2,y2):
+    zone = find_zone(x1, y1, x2, y2)
+    x1, y1 = convert_M_to_0(x1,y1,zone)
+    x2, y2 = convert_M_to_0(x2, y2,zone)
+    dx = x2 - x1
+    dy = y2 - y1
+    dinit = 2 * dy - dx
+    dne = 2 * dy - 2 * dx
+    de = 2 * dy
+    for i in range(int(x1), int(x2)):
+        a, b = convert_0_to_M(x1,y1,zone)
+        if dinit >= 0:
+            dinit = dinit + dne
+            draw_points_1(a, b)
+            x1 += 1
+            y1 += 1
+        else:
+            dinit = dinit + de
+            draw_points_1(a, b)
+            x1 += 1
 
 def find_zone(x1, y1, x2, y2):
     dx = x2 - x1
@@ -211,7 +266,6 @@ def draw_immunity_timer():
     glVertex2f(150, 450)
     glEnd()
 
-
 def draw_canyon_top():
     for i in range(len(canyon_top) - 1):
         x0, y0 = canyon_top[i]["x"], canyon_top[i]["y"]
@@ -241,6 +295,27 @@ class balloon_hitbox:
         self.height = self.ymax - self.ymin
         self.width = self.xmax - self.xmin
 
+def close():
+    glColor3f(0,0,0)
+    midpoint(470, 470, 490, 490)
+    midpoint(470, 490, 490, 470)
+
+def pause():
+    glColor3f(0,0,0)
+    midpoint(245, 470, 245, 490)
+    midpoint(255, 470, 255, 490)
+
+def resume():
+    glColor3f(0,0,0)
+    midpoint(245, 470, 245, 490)
+    midpoint(245, 470, 265, 480)
+    midpoint(245, 490, 265, 480)
+
+def back():
+    glColor3f(0,1,1)
+    midpoint(10, 480, 40, 480)
+    midpoint(10, 480, 25, 490)
+    midpoint(10, 480, 25, 470)
 
 def cloud():
     y = random.randint(200, 450)
@@ -354,6 +429,19 @@ def fuel_bar():
     eightway(10, 400, 10, 480, 0.58, 0.29, 0)  # Left border
     eightway(50, 400, 50, 480, 0.58, 0.29, 0)  # Right border
 
+def activate_slow_mo():
+    global slowmo, slowmo_start_time,s
+    slowmo = True
+    slowmo_start_time = time.time()
+    s=5
+    print("Slow motion activated!")
+
+def update_slow_mo():
+    global slowmo, slowmo_start_time,s
+    if slowmo and (time.time() - slowmo_start_time >= 5): #slow mode will be activated for 5 sec
+        slowmo = False
+        s=0
+        print("Slow motion deactivated!")
 
 # powerups related code
 def fuel_powerup():
@@ -433,6 +521,40 @@ def specialKeyListener(key, x, y):
         b -= 8
         fuel_level = max(0, fuel_level - 0.5)
     glutPostRedisplay()
+def mouseListener(button,state,x,y):
+    global canyon_top,c,b,cl,sky,clouds,gameover,fuel_level,game_state,fuel_cans,immunity_cans,is_immune,immunity_time,immunity_active,immunity_duration
+    actualx = x
+    actualy = 500 - y
+    if button == GLUT_LEFT_BUTTON and state == GLUT_DOWN:
+        if 10 <= actualx <= 40 and 470 <= actualy <= 490:
+            canyon_top = [{"x": i, "y": random.randint(60, 100)} for i in range(0, 600, 20)]
+            c = 0
+            b = 0
+            cl = 0
+            sky = (0.53, 0.81, 0.92, 1)
+            clouds = []
+            gameover = False
+            fuel_level = 100
+            game_state="Playing"
+            # powerups array
+            fuel_cans = []
+            immunity_cans = []
+            is_immune = False 
+            immunity_time = 0  # Starts at 0
+            immunity_active = False  # Initially not active
+            immunity_duration = 15 # Immunity lasts 5 seconds
+            print("starting over")
+            glutPostRedisplay
+        elif 245 <= actualx <= 265 and 470 <= actualy <= 490:
+            if game_state == "Playing":
+                game_state = "Paused"
+                print("Game Paused")
+            elif game_state == "Paused":
+                game_state = "Playing"
+                print("Game Resumed")
+            glutPostRedisplay()  
+        elif 470 <= actualx <= 490 and 470 <= actualy <= 490: 
+            glutLeaveMainLoop()
 
 
 def animation():
@@ -547,6 +669,12 @@ def showScreen():
             fuel_cans.pop()
         if immunity_can_collision():  # Check if balloon hits immunity can
             print("Immunity power-up collected!")
+        if game_state == "Paused":
+            resume()  
+        else:
+            pause()  
+        close()
+        back()
     glutSwapBuffers()
 
 
@@ -558,4 +686,5 @@ wind = glutCreateWindow(b"Up And Away!")  # window name
 glutDisplayFunc(showScreen)
 glutIdleFunc(animation)
 glutSpecialFunc(specialKeyListener)
+glutMouseFunc(mouseListener)
 glutMainLoop()

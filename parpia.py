@@ -293,7 +293,7 @@ def activate_slow_mo():
 
 def update_slow_mo():
     global slowmo, slowmo_start_time,s
-    if slowmo and (time.time() - slowmo_start_time >= 5): #slow mode will be activated for 5 sec
+    if slowmo and (time.time() - slowmo_start_time >= 5):
         slowmo = False
         s=0
         print("Slow motion deactivated!")
@@ -347,15 +347,19 @@ def showScreen():
                 print("Collided with cloud!")
                 gameover = True
         if len(slow)!=0:
-            for i in slow:
-                if i!=None:
-                    circle(i[0],i[3],i[4],i[5],i[1],i[2])
+            i=slow[0]
+            if slow[0][1]<=0:
+                slow=[]
+            else:
+                circle(i[0],i[3],i[4],i[5],i[1],i[2])
+
+            
         if collide_slowmo(slow)==True:
             slow=[]
             activate_slow_mo()
         if slowmo==True:
             update_slow_mo()
-            
+
     if gameover and print_score:
         print("Your score is "+str(round(time.time()-start_time)))
         print_score=False
