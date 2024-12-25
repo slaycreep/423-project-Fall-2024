@@ -297,22 +297,22 @@ class balloon_hitbox:
 
 def close():
     glColor3f(0,0,0)
-    midpoint(470, 470, 490, 490)
-    midpoint(470, 490, 490, 470)
+    midpoint(570, 470, 590, 490)  
+    midpoint(570, 490, 590, 470)
 
 def pause():
     glColor3f(0,0,0)
-    midpoint(245, 470, 245, 490)
-    midpoint(255, 470, 255, 490)
+    midpoint(345, 470, 345, 490)  
+    midpoint(355, 470, 355, 490)
 
 def resume():
     glColor3f(0,0,0)
-    midpoint(245, 470, 245, 490)
-    midpoint(245, 470, 265, 480)
-    midpoint(245, 490, 265, 480)
+    midpoint(345, 470, 345, 490)  
+    midpoint(345, 470, 365, 480)
+    midpoint(345, 490, 365, 480)
 
 def back():
-    glColor3f(0,1,1)
+    glColor3f(0,0,0)
     midpoint(10, 480, 40, 480)
     midpoint(10, 480, 25, 490)
     midpoint(10, 480, 25, 470)
