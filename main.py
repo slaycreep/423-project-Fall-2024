@@ -17,7 +17,6 @@ clouds = []
 gameover = False
 slowmo = False
 slow = []
-s = 0
 slowmo_start_time = None
 start_time = time.time()
 print_score = True
@@ -25,6 +24,11 @@ print_score = True
 fuel_level = 100
 fuel_cans = []
 birds = []
+
+# control speed
+global_obejct_speed = 6
+s = 0
+
 
 # ---end of global variables---
 
@@ -340,12 +344,12 @@ def draw_clouds():
 
 
 def move_clouds():
-    global cl, clouds, s
+    global cl, clouds, s, global_obejct_speed
     if len(clouds) == 0:
         cl = 0
     else:
         cl = cl - (
-            10 - s
+            global_obejct_speed - s
         )  # s is the variable which is actiavted when slowmode is on, so clouds will move slowly
 
 
@@ -359,8 +363,6 @@ def cloud_collision():
         and (bb.ymin) < (cc.ymin + cc.height)
         and (bb.ymin + bb.height) > (cc.ymin)
     )
-
-
 # ----end of Cloud related code----
 
 
@@ -386,7 +388,7 @@ def fuel_powerup():
 
 
 def draw_fuel_cans():
-    global fuel_cans
+    global fuel_cans,global_obejct_speed
     for can in fuel_cans:
         if can["x"] + can["move"] <= 0:
             fuel_cans.remove(can)
@@ -438,7 +440,7 @@ def draw_fuel_cans():
                 0,
                 0,
             )
-            can["move"] -= 2
+            can["move"] -= (global_obejct_speed - s)  # s is the variable which is actiavted when slowmode is on, so clouds will move slowly
 
 
 class FuelCanHitbox:
@@ -490,13 +492,13 @@ def generate_birds():
 
 
 def draw_birds():
-    global birds
+    global birds, global_obejct_speed
     print(birds)
     for bird in birds:
         if bird[0] <= 0:
             birds.remove(bird)
         else:
-            bird[0] -= 2
+            bird[0] -= (global_obejct_speed - s)
             bird_figure(bird[0], bird[1])
 
 
@@ -556,12 +558,12 @@ def create_plane():
 
 
 def update_planes():
-    global planeLst, planeSpeed
+    global planeLst, planeSpeed, s, global_obejct_speed
     for plane in planeLst:
         if plane["planeX"] < -230:
             planeLst.remove(plane)
         else:
-            plane["planeX"] -= planeSpeed
+            plane["planeX"] -= (global_obejct_speed - s)
 
 
 def check_planes():
@@ -571,7 +573,7 @@ def check_planes():
         create_plane()
         lstCreatedPlane = time.time()
 
-
+# TODO: need to change the collision logic
 def check_airplane_balloon_collision():
     global planeLst, gameover
     balloon = balloon_hitbox(b)
@@ -617,10 +619,11 @@ def activate_slow_mo():
     global slowmo, slowmo_start_time, s
     slowmo = True
     slowmo_start_time = time.time()
-    s = 5
+    s = 3
     print("Slow motion activated!")
 
 
+# TODO: need to change slow mo duartion
 def update_slow_mo():
     global slowmo, slowmo_start_time, s
     if slowmo and (
@@ -655,6 +658,8 @@ def animation():
         update_canyon_top()
         move_clouds()
         move_slow(slow)
+        check_planes()
+        update_planes()
         b -= 1  # gravity
     glutPostRedisplay()
 
@@ -668,7 +673,7 @@ def iterate():
     glLoadIdentity()
 
 
-print("-----SLOW ARRAY-----", slow)
+# print("-----SLOW ARRAY-----", slow)
 
 
 # ----Main function----
@@ -739,6 +744,10 @@ def showScreen():
 
 
 glutInit()
+
+# need to refactor this
+planes_initVal()
+
 glutInitDisplayMode(GLUT_RGBA)
 glutInitWindowSize(600, 500)  # window size
 glutInitWindowPosition(0, 0)
