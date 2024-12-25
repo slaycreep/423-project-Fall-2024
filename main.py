@@ -526,6 +526,64 @@ def check_bird_collision():
 # ----end of Bird related code----
 
 
+# ----aeroplane related code----
+def planes_initVal():
+    global planeLst, planeSpeed, lstCreatedPlane
+    planeLst = []
+    planeSpeed = 2
+    lstCreatedPlane = time.time()
+
+
+def drawAeroplane():
+    global planeLst  # planeX,0  #, catcher_width, catcher_color
+    if len(planeLst) != 0:
+
+        for plane in planeLst:
+            planeX = plane["planeX"]
+            planeY = plane["planeY"]
+            eightway(planeX, planeY + 20, planeX + 60, planeY + 20, 1, 1, 1)
+            eightway(planeX + 20, planeY + 30, planeX + 50, planeY + 30, 1, 1, 1)
+            eightway(planeX, planeY + 20, planeX + 20, planeY + 30, 1, 1, 1)
+            eightway(planeX + 60, planeY + 20, planeX + 60, planeY + 40, 1, 1, 1)
+            eightway(planeX + 50, planeY + 30, planeX + 60, planeY + 40, 1, 1, 1)
+
+
+def create_plane():
+    global planeLst
+
+    planeInfo = {"planeY": random.randint(200, 400), "planeX": 600}
+    planeLst.append(planeInfo)
+
+
+def update_planes():
+    global planeLst, planeSpeed
+    for plane in planeLst:
+        if plane["planeX"] < -230:
+            planeLst.remove(plane)
+        else:
+            plane["planeX"] -= planeSpeed
+
+
+def check_planes():
+    global lstCreatedPlane
+    curTime = time.time()
+    if curTime - lstCreatedPlane >= 15:
+        create_plane()
+        lstCreatedPlane = time.time()
+
+
+def check_airplane_balloon_collision():
+    global planeLst, gameover
+    balloon = balloon_hitbox(b)
+
+    for plane in planeLst:
+        if (
+            plane["planeX"] < balloon.xmax and plane["planeY"] < balloon.ymax
+        ):  # and plane['planeX'+60] > balloon.xmax :  # (-230 - bubbles['bubbleRad']):
+
+            return True
+# ----end of aeroplane related code----
+
 # ----Slow motion related code----
 def slow_motion():
     global slow
@@ -571,8 +629,6 @@ def update_slow_mo():
         slowmo = False
         s = 0
         print("Slow motion deactivated!")
-
-
 # ----end of Slow motion related code----
 
 
@@ -638,6 +694,14 @@ def showScreen():
         generate_birds()
         draw_birds()
 
+        # aeroplane display
+        drawAeroplane()
+
+        ####check airplane balloon collision
+        if check_airplane_balloon_collision():
+            gameover = True
+            print("Collided with plane!")
+
         if fuel_can_collision() == True:
             print("Collided with fuel can!")
             fuel_level = min(100, fuel_level + 10)
@@ -657,9 +721,11 @@ def showScreen():
                 print("Collided with cloud!")
                 gameover = True
         if len(slow) != 0:
-            for i in slow:
-                if i != None:
-                    circle(i[0], i[3], i[4], i[5], i[1], i[2])
+            i = slow[0]
+            if slow[0][1] <= 0:
+                slow = []
+            else:
+                circle(i[0], i[3], i[4], i[5], i[1], i[2])
         if collide_slowmo(slow) == True:
             slow = []
             activate_slow_mo()
