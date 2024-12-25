@@ -13,6 +13,7 @@ b = 0
 cl = 0
 sky = (0.53, 0.81, 0.92, 1)
 clouds = []
+birds = []
 gameover = False
 fuel_level = 100
 
@@ -325,21 +326,8 @@ def fuel_powerup():
     y = random.randint(300, 500)
     if len(fuel_cans) == 0 and random.randint(1, 50) == 10:
         # Add a single fuel can with position and movement info
-        fuel_cans.append({
-            "x": 530,
-            "y": y,
-            "radius": 25,
-            "move": 0
-        })
+        fuel_cans.append({"x": 530, "y": y, "radius": 25, "move": 0})
 
-class fuel_can_hitbox:
-    def __init__(self, can):
-        self.xmin = can["x"] - can["radius"] + can["move"]
-        self.ymin = can["y"] - can["radius"]
-        self.xmax = can["x"] + can["radius"] + can["move"]
-        self.ymax = can["y"] + can["radius"]
-        self.height = self.ymax - self.ymin
-        self.width = self.xmax - self.xmin
 
 def draw_fuel_cans():
     global fuel_cans
@@ -350,17 +338,84 @@ def draw_fuel_cans():
             # Draw outer circle
             circle(can["radius"], 1, 0.84, 0, can["x"] + can["move"], can["y"])
             # Fill circle
-            fill_circle_with_points(can["x"] + can["move"], can["y"], can["radius"], 1, 0.84, 0)
+            fill_circle_with_points(
+                can["x"] + can["move"], can["y"], can["radius"], 1, 0.84, 0
+            )
             # Draw fuel can symbol
             # bottom
-            eightway(can["x"] - 10 + can["move"], can["y"] - 5, can["x"] + 10 + can["move"], can["y"] - 5, 0, 0, 0)
+            eightway(
+                can["x"] - 10 + can["move"],
+                can["y"] - 5,
+                can["x"] + 10 + can["move"],
+                can["y"] - 5,
+                0,
+                0,
+                0,
+            )
             # top
-            eightway(can["x"] - 10 + can["move"], can["y"] + 10, can["x"] + 10 + can["move"], can["y"] + 10, 0, 0, 0)
+            eightway(
+                can["x"] - 10 + can["move"],
+                can["y"] + 10,
+                can["x"] + 10 + can["move"],
+                can["y"] + 10,
+                0,
+                0,
+                0,
+            )
             # left
-            eightway(can["x"] - 10 + can["move"], can["y"] - 5, can["x"] - 10 + can["move"], can["y"] + 10, 0, 0, 0)
+            eightway(
+                can["x"] - 10 + can["move"],
+                can["y"] - 5,
+                can["x"] - 10 + can["move"],
+                can["y"] + 10,
+                0,
+                0,
+                0,
+            )
             # right
-            eightway(can["x"] + 10 + can["move"], can["y"] - 5, can["x"] + 10 + can["move"], can["y"] + 10, 0, 0, 0)
+            eightway(
+                can["x"] + 10 + can["move"],
+                can["y"] - 5,
+                can["x"] + 10 + can["move"],
+                can["y"] + 10,
+                0,
+                0,
+                0,
+            )
             can["move"] -= 2
+
+
+# draw a bird
+def bird_figure(x, y):
+    random_color = (random.random(), random.random(), random.random())
+    eightway(x, y, x + 15, y - 10, 0, 0, 0)
+    eightway(x, y, x + 15, y + 10, 0, 0, 0)
+    # tail
+    eightway(x + 15, y - 10, x + 15, y - 5, 0, 0, 0)
+    eightway(x + 15, y + 10, x + 15, y + 5, 0, 0, 0)
+    eightway(x + 15, y - 5, x + 20, y, 0, 0, 0)
+    eightway(x + 15, y + 5, x + 20, y, 0, 0, 0)
+
+
+def generate_birds():
+    global birds
+    if len(birds) == 0 and random.randint(1, 100) == 10:
+        x = 600
+        y = random.randint(200, 400)
+        birds.append([x, y])
+        birds.append([x + 10, y + 20])
+        birds.append([x + 15, y - 20])
+
+
+def draw_birds():
+    global birds
+    print(birds)
+    for bird in birds:
+        if bird[0] <= 0:
+            birds.remove(bird)
+        else:
+            bird[0] -= 2
+            bird_figure(bird[0], bird[1])
 
 
 def specialKeyListener(key, x, y):
@@ -424,17 +479,53 @@ def cloud_collision():
         and (bb.ymin) < (cc.ymin + cc.height)
         and (bb.ymin + bb.height) > (cc.ymin)
     )
+
+
+class FuelCanHitbox:
+    def __init__(self, can):
+        self.xmin = can["x"] - can["radius"] + can["move"]
+        self.ymin = can["y"] - can["radius"]
+        self.xmax = can["x"] + can["radius"] + can["move"]
+        self.ymax = can["y"] + can["radius"]
+        self.height = self.ymax - self.ymin
+        self.width = self.xmax - self.xmin
+
+
 def fuel_can_collision():
     global fuel_cans
     bb = balloon_hitbox(b)
     for can in fuel_cans:
-        fc = fuel_can_hitbox(can)
+        fc = FuelCanHitbox(can)
         return (
             (bb.xmin) < (fc.xmin + fc.width)
             and (bb.xmin + bb.width) > (fc.xmin)
             and (bb.ymin) < (fc.ymin + fc.height)
             and (bb.ymin + bb.height) > (fc.ymin)
         )
+
+
+class BirdHitbox:
+    def __init__(self, bird):
+        self.xmin = bird[0]
+        self.ymin = bird[1]
+        self.xmax = bird[0] + 20
+        self.ymax = bird[1] + 20
+        self.height = self.ymax - self.ymin
+        self.width = self.xmax - self.xmin
+
+
+def check_bird_collision():
+    global birds
+    bb = balloon_hitbox(b)
+    for bird in birds:
+        fc = BirdHitbox(bird)
+        return (
+            (bb.xmin) < (fc.xmin + fc.width)
+            and (bb.xmin + bb.width) > (fc.xmin)
+            and (bb.ymin) < (fc.ymin + fc.height)
+            and (bb.ymin + bb.height) > (fc.ymin)
+        )
+
 
 def showScreen():
     global c, b, gameover, fuel_level
@@ -450,6 +541,9 @@ def showScreen():
         cloud()
         draw_clouds()
         fuel_bar()
+        # bird code
+        generate_birds()
+        draw_birds()
         fuel_powerup()
         draw_fuel_cans()
         if check_collision() == True:
@@ -462,6 +556,9 @@ def showScreen():
             print("Collided with fuel can!")
             fuel_level = min(100, fuel_level + 10)
             fuel_cans.pop()
+        if check_bird_collision() == True:
+            print("Collided with bird!")
+            gameover = True
 
     glutSwapBuffers()
 
