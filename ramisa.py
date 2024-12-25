@@ -297,26 +297,25 @@ class balloon_hitbox:
 
 def close():
     glColor3f(0,0,0)
-    midpoint(470, 470, 490, 490)
-    midpoint(470, 490, 490, 470)
+    midpoint(570, 470, 590, 490)  # Shifted right by 100
+    midpoint(570, 490, 590, 470)  # Shifted right by 100
 
 def pause():
     glColor3f(0,0,0)
-    midpoint(245, 470, 245, 490)
-    midpoint(255, 470, 255, 490)
+    midpoint(300, 470, 300, 490)  # Shifted right by 55
+    midpoint(310, 470, 310, 490)  # Shifted right by 55
 
 def resume():
     glColor3f(0,0,0)
-    midpoint(245, 470, 245, 490)
-    midpoint(245, 470, 265, 480)
-    midpoint(245, 490, 265, 480)
+    midpoint(245 + 55, 470, 245 + 55, 490)  # Shifted right by 55
+    midpoint(245 + 55, 470, 265 + 55, 480)  # Shifted right by 55
+    midpoint(245 + 55, 490, 265 + 55, 480)  # Shifted right by 55
 
 def back():
-    glColor3f(0,1,1)
+    glColor3f(0,0,0)
     midpoint(10, 480, 40, 480)
     midpoint(10, 480, 25, 490)
     midpoint(10, 480, 25, 470)
-
 def cloud():
     y = random.randint(200, 450)
     if len(clouds) == 0 and random.randint(1, 100) == 10:
@@ -545,7 +544,7 @@ def mouseListener(button,state,x,y):
             immunity_duration = 15 # Immunity lasts 5 seconds
             print("starting over")
             glutPostRedisplay
-        elif 245 <= actualx <= 265 and 470 <= actualy <= 490:
+        elif 300 <= actualx <= 320 and 470 <= actualy <= 490:
             if game_state == "Playing":
                 game_state = "Paused"
                 print("Game Paused")
@@ -553,7 +552,7 @@ def mouseListener(button,state,x,y):
                 game_state = "Playing"
                 print("Game Resumed")
             glutPostRedisplay()  
-        elif 470 <= actualx <= 490 and 470 <= actualy <= 490: 
+        elif 470 <= actualx <= 590 and 470 <= actualy <= 590: 
             glutLeaveMainLoop()
 
 
