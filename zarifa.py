@@ -537,17 +537,32 @@ def check_planes():
    if curTime - lstCreatedPlane >= 15:
        create_plane()
        lstCreatedPlane = time.time()
-
-
 def check_airplane_balloon_collision():
     global planeLst, gameover
-    balloon = balloon_hitbox(b)
-
+    balloon = balloon_hitbox(b)  # Balloon hitbox
 
     for plane in planeLst:
-        if plane['planeX'] < balloon.xmax and plane['planeY'] < balloon.ymax : #and plane['planeX'+60] > balloon.xmax :  # (-230 - bubbles['bubbleRad']):
+        # Define plane hitbox
+        plane_hitbox = {
+            'xmin': plane['planeX'],
+            'ymin': plane['planeY'] + 20,
+            'xmax': plane['planeX'] + 60,
+            'ymax': plane['planeY'] + 40,
+        }
 
-            return True
+        # AABB Collision Check
+        if (
+            balloon.xmin < plane_hitbox['xmax']
+            and balloon.xmax > plane_hitbox['xmin']
+            and balloon.ymin < plane_hitbox['ymax']
+            and balloon.ymax > plane_hitbox['ymin']
+        ):
+            return True  # Collision detected
+
+    return False  # No collision
+
+
+
 
 
 def showScreen():
@@ -604,5 +619,6 @@ glutDisplayFunc(showScreen)
 glutIdleFunc(animation)
 glutSpecialFunc(specialKeyListener)
 glutMainLoop()
+
 
 
