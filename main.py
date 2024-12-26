@@ -757,8 +757,9 @@ def showScreen():
     if not gameover:
         balloons(b)
         draw_canyon_top()
-        cloud()
-        draw_clouds()
+        if game_state == "Playing":
+            cloud()
+            draw_clouds()
 
         # fuel display
         fuel_bar()
