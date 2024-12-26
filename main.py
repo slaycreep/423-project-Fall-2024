@@ -25,6 +25,8 @@ fuel_level = 100
 fuel_cans = []
 birds = []
 
+game_state="Playing"
+
 # control speed
 global_obejct_speed = 6
 s = 0
@@ -492,14 +494,15 @@ def generate_birds():
 
 
 def draw_birds():
-    global birds, global_obejct_speed
+    global birds, global_obejct_speed, game_state
     print(birds)
     for bird in birds:
         if bird[0] <= 0:
             birds.remove(bird)
         else:
             bird[0] -= (global_obejct_speed - s)
-            bird_figure(bird[0], bird[1])
+            if game_state == "Playing": 
+                bird_figure(bird[0], bird[1])
 
 
 class BirdHitbox:
@@ -635,6 +638,73 @@ def update_slow_mo():
 # ----end of Slow motion related code----
 
 
+
+
+#----button related code----
+def close():
+    glColor3f(0,0,0)
+    eightway(570, 470, 590, 490,1,1,1)  # Shifted right by 100
+    eightway(570, 490, 590, 470,1,1,1)  # Shifted right by 100
+
+def pause():
+    glColor3f(0,0,0)
+    eightway(300, 470, 300, 490,1,1,1)  # Shifted right by 55
+    eightway(310, 470, 310, 490,1,1,1)  # Shifted right by 55
+
+def resume():
+    glColor3f(0,0,0)
+    eightway(245 + 55, 470, 245 + 55, 490,1,1,1)  # Shifted right by 55
+    eightway(245 + 55, 470, 265 + 55, 480,1,1,1)  # Shifted right by 55
+    eightway(245 + 55, 490, 265 + 55, 480,1,1,1)  # Shifted right by 55
+
+def back():
+    glColor3f(0,0,0)
+    eightway(10, 480, 40, 480,1,1,1)
+    eightway(10, 480, 25, 490,1,1,1)
+    eightway(10, 480, 25, 470,1,1,1)
+
+
+def mouseListener(button,state,x,y):
+    global canyon_top,c,b,cl,sky,clouds,gameover,fuel_level,game_state,fuel_cans,immunity_cans,is_immune,immunity_time,immunity_active,immunity_duration
+    actualx = x
+    actualy = 500 - y
+    if button == GLUT_LEFT_BUTTON and state == GLUT_DOWN:
+        # Check if the user clicked on the restart button
+        if 10 <= actualx <= 40 and 470 <= actualy <= 490:
+            canyon_top = [{"x": i, "y": random.randint(60, 100)} for i in range(0, 600, 20)]
+            c = 0
+            b = 0
+            cl = 0
+            sky = (0.53, 0.81, 0.92, 1)
+            clouds = []
+            gameover = False
+            fuel_level = 100
+            game_state="Playing"
+            # powerups array
+            fuel_cans = []
+            immunity_cans = []
+            is_immune = False 
+            immunity_time = 0  # Starts at 0
+            immunity_active = False  # Initially not active
+            immunity_duration = 15 # Immunity lasts 5 seconds
+            print("starting over")
+            glutPostRedisplay()
+        # Check if the user clicked on the pause/resume button
+        elif 300 <= actualx <= 320 and 470 <= actualy <= 490:
+            if game_state == "Playing":
+                game_state = "Paused"
+                print("Game Paused")
+            elif game_state == "Paused":
+                game_state = "Playing"
+                print("Game Resumed")
+            glutPostRedisplay()  
+
+        # Check if the user clicked on the close button
+        elif 470 <= actualx <= 590 and 470 <= actualy <= 590: 
+            glutLeaveMainLoop()
+
+# ----end of button related code----
+
 def specialKeyListener(key, x, y):
     global b, fuel_level, gameover
     b1 = balloon_hitbox(b)
@@ -653,8 +723,8 @@ def specialKeyListener(key, x, y):
 
 
 def animation():
-    global gameover, b, slow, slowmo
-    if not gameover:
+    global gameover, b, slow, slowmo, game_state
+    if not gameover and game_state == "Playing":
         update_canyon_top()
         move_clouds()
         move_slow(slow)
@@ -678,7 +748,7 @@ def iterate():
 
 # ----Main function----
 def showScreen():
-    global c, b, gameover, slow, print_score, fuel_level
+    global c, b, gameover, slow, print_score, fuel_level, game_state
     glClearColor(*sky)
     glClear(GL_COLOR_BUFFER_BIT)
     glLoadIdentity()
@@ -737,6 +807,13 @@ def showScreen():
         if slowmo == True:
             update_slow_mo()
 
+        if game_state == "Paused":
+            resume()  
+        else:
+            pause()  
+        close()
+        back()
+
     if gameover and print_score:
         print("Your score is " + str(round(time.time() - start_time)))
         print_score = False
@@ -755,4 +832,5 @@ wind = glutCreateWindow(b"Up And Away!")  # window name
 glutDisplayFunc(showScreen)
 glutIdleFunc(animation)
 glutSpecialFunc(specialKeyListener)
+glutMouseFunc(mouseListener)
 glutMainLoop()
