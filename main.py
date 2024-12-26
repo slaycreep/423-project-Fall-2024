@@ -578,17 +578,29 @@ def check_planes():
         create_plane()
         lstCreatedPlane = time.time()
 
-# TODO: need to change the collision logic
 def check_airplane_balloon_collision():
     global planeLst, gameover
-    balloon = balloon_hitbox(b)
+    balloon = balloon_hitbox(b)  # Balloon hitbox
 
     for plane in planeLst:
-        if (
-            plane["planeX"] < balloon.xmax and plane["planeY"] < balloon.ymax
-        ):  # and plane['planeX'+60] > balloon.xmax :  # (-230 - bubbles['bubbleRad']):
+        # Define plane hitbox
+        plane_hitbox = {
+            'xmin': plane['planeX'],
+            'ymin': plane['planeY'] + 20,
+            'xmax': plane['planeX'] + 60,
+            'ymax': plane['planeY'] + 40,
+        }
 
-            return True
+        # AABB Collision Check
+        if (
+            balloon.xmin < plane_hitbox['xmax']
+            and balloon.xmax > plane_hitbox['xmin']
+            and balloon.ymin < plane_hitbox['ymax']
+            and balloon.ymax > plane_hitbox['ymin']
+        ):
+            return True  # Collision detected
+
+    return False  # No collision
 # ----end of aeroplane related code----
 
 # ----Slow motion related code----
@@ -628,7 +640,7 @@ def activate_slow_mo():
     print("Slow motion activated!")
 
 
-# TODO: need to change slow mo duartion
+
 def update_slow_mo():
     global slowmo, slowmo_start_time, s
     if slowmo and (
@@ -645,8 +657,8 @@ def update_slow_mo():
 #----button related code----
 def close():
     glColor3f(0,0,0)
-    eightway(570, 470, 590, 490,1,1,1)  # Shifted right by 100
-    eightway(570, 490, 590, 470,1,1,1)  # Shifted right by 100
+    eightway(350, 470, 370, 490,1,1,1)  # Shifted right by 100
+    eightway(350, 490, 370, 470,1,1,1)  # Shifted right by 100
 
 def pause():
     glColor3f(0,0,0)
@@ -655,15 +667,15 @@ def pause():
 
 def resume():
     glColor3f(0,0,0)
-    eightway(245 + 55, 470, 245 + 55, 490,1,1,1)  # Shifted right by 55
-    eightway(245 + 55, 470, 265 + 55, 480,1,1,1)  # Shifted right by 55
-    eightway(245 + 55, 490, 265 + 55, 480,1,1,1)  # Shifted right by 55
+    eightway(300, 470, 300, 490,1,1,1)  # Shifted right by 55
+    eightway(300, 470, 320, 480,1,1,1)  # Shifted right by 55
+    eightway(300, 490, 320, 480,1,1,1)  # Shifted right by 55
 
 def back():
     glColor3f(0,0,0)
-    eightway(10, 480, 40, 480,1,1,1)
-    eightway(10, 480, 25, 490,1,1,1)
-    eightway(10, 480, 25, 470,1,1,1)
+    eightway(240, 480, 270, 480,1,1,1)
+    eightway(240, 480, 255, 490,1,1,1)
+    eightway(240, 480, 255, 470,1,1,1)
 
 
 def mouseListener(button,state,x,y):
@@ -671,8 +683,8 @@ def mouseListener(button,state,x,y):
     actualx = x
     actualy = 500 - y
     if button == GLUT_LEFT_BUTTON and state == GLUT_DOWN:
-        # Check if the user clicked on the restart button
-        if 10 <= actualx <= 40 and 470 <= actualy <= 490:
+        # Check if the user clicked on the restart/back button
+        if 240 <= actualx <= 270 and 470 <= actualy <= 490:
             canyon_top = [{"x": i, "y": random.randint(60, 100)} for i in range(0, 600, 20)]
             c = 0
             b = 0
@@ -702,7 +714,7 @@ def mouseListener(button,state,x,y):
             glutPostRedisplay()  
 
         # Check if the user clicked on the close button
-        elif 470 <= actualx <= 590 and 470 <= actualy <= 590: 
+        elif 350 <= actualx <= 370 and 470 <= actualy <= 490: 
             glutLeaveMainLoop()
 
 # ----end of button related code----
