@@ -251,7 +251,7 @@ class balloon_hitbox:
 
 # ----Cloud related code----
 def cloud():
-    y = random.randint(90, 400)  # cloud's vertical position will be generated randomly
+    y = random.randint(250, 480)  # cloud's vertical position will be generated randomly
     if len(clouds) == 0 and random.randint(1, 200) == 10:
         clouds.append([25, 0.69, 0.74, 0.71, 530, y])
         clouds.append([25, 0.69, 0.74, 0.71, 550, y])
@@ -759,7 +759,8 @@ def showScreen():
     if not gameover:
         balloons(b)
         draw_canyon_top()
-        cloud()
+        if game_state == "Playing":
+            cloud()
         draw_clouds()
 
         # fuel display
