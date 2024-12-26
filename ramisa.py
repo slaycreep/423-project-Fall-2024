@@ -520,11 +520,15 @@ def specialKeyListener(key, x, y):
         b -= 8
         fuel_level = max(0, fuel_level - 0.5)
     glutPostRedisplay()
+
+
+
 def mouseListener(button,state,x,y):
     global canyon_top,c,b,cl,sky,clouds,gameover,fuel_level,game_state,fuel_cans,immunity_cans,is_immune,immunity_time,immunity_active,immunity_duration
     actualx = x
     actualy = 500 - y
     if button == GLUT_LEFT_BUTTON and state == GLUT_DOWN:
+        # Check if the user clicked on the restart button
         if 10 <= actualx <= 40 and 470 <= actualy <= 490:
             canyon_top = [{"x": i, "y": random.randint(60, 100)} for i in range(0, 600, 20)]
             c = 0
@@ -543,7 +547,8 @@ def mouseListener(button,state,x,y):
             immunity_active = False  # Initially not active
             immunity_duration = 15 # Immunity lasts 5 seconds
             print("starting over")
-            glutPostRedisplay
+            glutPostRedisplay()
+        # Check if the user clicked on the pause/resume button
         elif 300 <= actualx <= 320 and 470 <= actualy <= 490:
             if game_state == "Playing":
                 game_state = "Paused"
@@ -552,6 +557,8 @@ def mouseListener(button,state,x,y):
                 game_state = "Playing"
                 print("Game Resumed")
             glutPostRedisplay()  
+
+        # Check if the user clicked on the close button
         elif 470 <= actualx <= 590 and 470 <= actualy <= 590: 
             glutLeaveMainLoop()
 
