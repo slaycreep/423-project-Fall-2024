@@ -442,7 +442,8 @@ def draw_fuel_cans():
                 0,
                 0,
             )
-            can["move"] -= (global_obejct_speed - s)  # s is the variable which is actiavted when slowmode is on, so clouds will move slowly
+            if game_state == "Playing":
+                can["move"] -= (global_obejct_speed - s)
 
 
 class FuelCanHitbox:
@@ -500,9 +501,10 @@ def draw_birds():
         if bird[0] <= 0:
             birds.remove(bird)
         else:
-            bird[0] -= (global_obejct_speed - s)
             if game_state == "Playing": 
-                bird_figure(bird[0], bird[1])
+                bird[0] -= (global_obejct_speed - s)
+
+            bird_figure(bird[0], bird[1])
 
 
 class BirdHitbox:
