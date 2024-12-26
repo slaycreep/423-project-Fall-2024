@@ -759,7 +759,7 @@ def showScreen():
         draw_canyon_top()
         if game_state == "Playing":
             cloud()
-            draw_clouds()
+        draw_clouds()
 
         # fuel display
         fuel_bar()
