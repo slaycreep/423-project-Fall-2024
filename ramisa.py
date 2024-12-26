@@ -17,6 +17,9 @@ fuel_level = 100
 game_state="Playing"
 # powerups array
 fuel_cans = []
+
+
+# immunity related global variables
 immunity_cans = []
 is_immune = False 
 immunity_time = 0  # Starts at 0
@@ -236,6 +239,9 @@ def update_canyon_top():
         new_y = max(50, min(150, new_y))  # Clamp y value
         canyon_top.append({"x": new_x, "y": new_y})
 
+
+
+# ekhan theke shuru
 def collect_immunity_powerup():
     global is_immune, immunity_time
     is_immune = True
@@ -265,6 +271,17 @@ def draw_immunity_timer():
     glVertex2f(150, 480)
     glVertex2f(150, 450)
     glEnd()
+
+
+
+
+
+
+
+
+
+
+
 
 def draw_canyon_top():
     for i in range(len(canyon_top) - 1):
@@ -454,6 +471,7 @@ def fuel_powerup():
             "move": 0
         })
 
+# ----------------etao nea lagbe
 def immunity_powerup():
     y = random.randint(300, 500)
     if len(immunity_cans) == 0 and random.randint(1, 50) == 10:
@@ -495,6 +513,11 @@ def draw_fuel_cans():
             eightway(can["x"] + 10 + can["move"], can["y"] - 5, can["x"] + 10 + can["move"], can["y"] + 10, 0, 0, 0)
             can["move"] -= 2
 
+
+
+
+
+# ----------------etao nea lagbe
 def draw_immunity_cans():
     global immunity_cans
     for can in immunity_cans:
@@ -659,8 +682,9 @@ def showScreen():
         draw_clouds()
         fuel_bar()
         fuel_powerup()
-        immunity_powerup()
         draw_fuel_cans()
+        
+        immunity_powerup()
         draw_immunity_cans()  # Draw immunity cans
         draw_immunity_timer()
         if check_collision() == True:
