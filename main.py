@@ -19,6 +19,8 @@ slowmo = False
 slow = []
 slowmo_start_time = None
 start_time = time.time()
+pause_time = 0
+pause_start_time = None
 print_score = True
 
 fuel_level = 100
@@ -665,7 +667,7 @@ def back():
 
 
 def mouseListener(button,state,x,y):
-    global canyon_top,c,b,cl,sky,clouds,gameover,fuel_level,game_state,fuel_cans,immunity_cans,is_immune,immunity_time,immunity_active,immunity_duration
+    global canyon_top,c,b,cl,sky,clouds,gameover,fuel_level,game_state,fuel_cans,immunity_cans,is_immune,immunity_time,immunity_active,immunity_duration,pause_time,pause_start_time
     actualx = x
     actualy = 500 - y
     if button == GLUT_LEFT_BUTTON and state == GLUT_DOWN:
@@ -694,9 +696,11 @@ def mouseListener(button,state,x,y):
             if game_state == "Playing":
                 game_state = "Paused"
                 print("Game Paused")
+                pause_start_time=time.time()
             elif game_state == "Paused":
                 game_state = "Playing"
                 print("Game Resumed")
+                pause_time += time.time() - pause_start_time
             glutPostRedisplay()  
 
         # Check if the user clicked on the close button
@@ -748,7 +752,7 @@ def iterate():
 
 # ----Main function----
 def showScreen():
-    global c, b, gameover, slow, print_score, fuel_level, game_state
+    global c, b, gameover, slow, print_score, fuel_level, game_state, pause_time
     glClearColor(*sky)
     glClear(GL_COLOR_BUFFER_BIT)
     glLoadIdentity()
@@ -816,7 +820,7 @@ def showScreen():
         back()
 
     if gameover and print_score:
-        print("Your score is " + str(round(time.time() - start_time)))
+        print("Your score is " + str(round(time.time() - start_time - pause_time)))
         print_score = False
     glutSwapBuffers()
 
