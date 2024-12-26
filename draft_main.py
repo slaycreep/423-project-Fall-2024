@@ -424,7 +424,7 @@ def immunity_timer():
 
 def immunity_powerup():
     y = random.randint(300, 500)
-    if len(immunity_cans) == 0 and random.randint(1, 200) == 10:
+    if len(immunity_cans) == 0 and random.randint(1, 50) == 10:
         immunity_cans.append({
             "x": 530,
             "y": y,
@@ -434,7 +434,7 @@ def immunity_powerup():
 
 
 def draw_immunity_cans():
-    global immunity_cans, global_obejct_speed, game_state
+    global immunity_cans, global_obejct_speed
     for can in immunity_cans:
         if can["x"] + can["move"] <= 0:
             immunity_cans.remove(can)
@@ -443,8 +443,7 @@ def draw_immunity_cans():
             circle(can["radius"], 0, 1, 0, can["x"] + can["move"], can["y"])
             # Fill circle
             fill_circle_with_points(can["x"] + can["move"], can["y"], can["radius"], 0, 1, 0)
-            if game_state == "Playing":
-                can["move"] -= global_obejct_speed
+            can["move"] -= global_obejct_speed
 def immunity_can_collision():
     global immunity_cans
     bb = balloon_hitbox(b)
@@ -896,7 +895,7 @@ def showScreen():
             print("Collided with bird!")
             gameover = True
         if (
-            random.randint(1, 100) == 77 and len(slow) == 0 and not slowmo and game_state == "Playing"
+            random.randint(1, 100) == 77 and len(slow) == 0 and not slowmo
         ):  # slow motion circles will generate
             slow_motion()
         if check_collision_with_canyon() == True:
